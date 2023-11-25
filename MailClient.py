@@ -5,6 +5,9 @@ from ssl import *
 msg = "\r\nI love computer networks!"
 endmsg = "\r\n.\r\n"
 
+correo = destino = "cesarfernandezgarcia349@gmail.com"
+clave = "lelp feet yrwg bean"
+
 # Elige un servidor de correo (por ejemplo, el servidor de correo de Google) y llámalo mailserver
 mailserver = "smtp.gmail.com"
 port = 587
@@ -77,7 +80,7 @@ else:
     
 # Envía el nombre de usuario y muestra la respuesta del servidor
 
-username = b64encode("cesarfernandezgarcia349@gmail.com".encode()) + b'\r\n'
+username = b64encode(correo.encode()) + b'\r\n'
 clientSocket.send(username)
 recv5 = clientSocket.recv(1024).decode()
 
@@ -89,7 +92,7 @@ else:
     print("Se envió correctamente el nombre de usuario")
     
 # Envía la contraseña y muestra la respuesta del servidor
-password = b64encode("lelp feet yrwg bean".encode()) + b'\r\n'
+password = b64encode(clave.encode()) + b'\r\n'
 clientSocket.send(password)
 recv6 = clientSocket.recv(1024).decode()
 
@@ -101,7 +104,7 @@ else:
     print("Las credenciales son correctas")
     
 # Envía el comando MAIL FROM y muestra la respuesta del servidor
-mailFromCommand = 'MAIL FROM: <cesarfernandezgarcia349@gmail.com>\r\n'
+mailFromCommand = f'MAIL FROM: <{correo}>\r\n'
 clientSocket.send(mailFromCommand.encode())
 recv7 = clientSocket.recv(1024).decode()
 
@@ -113,7 +116,7 @@ else:
     print("Se ejecutó correctamente el comando MAIL FROM")
 
 # Envía el comando RCPT TO y muestra la respuesta del servidor
-rcptToCommand = 'RCPT TO: <cesarfernandezgarcia349@gmail.com>\r\n'
+rcptToCommand = f'RCPT TO: <{destino}>\r\n'
 clientSocket.send(rcptToCommand.encode())
 recv8 = clientSocket.recv(1024).decode()
 
