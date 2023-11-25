@@ -1,0 +1,84 @@
+from socket import *
+import sys
+
+if len(sys.argv) <= 1:
+    print('Por favor, ingresa la dirección IP del servidor como argumento al ejecutar este script.\nUso: "python proxy_server.py servidor_ip"\n[servidor_ip: La dirección IP del servidor proxy]\n')
+    sys.exit(2)
+
+server_ip = sys.argv[1]
+
+proxy_socket = socket(AF_INET, SOCK_STREAM)
+proxy_socket.bind((server_ip, 8080))
+proxy_socket.listen(5)
+while True:
+    print('Esperando solicitudes...')
+    client_socket, addr = proxy_socket.accept()
+    print('Se ha recibido una conexión desde:', addr)
+    request = client_socket.recv(4096).decode()
+    if not request:
+        continue
+
+    print('Solicitud recibida: ' + request)
+    url = request.split()[1]
+    resource = url.partition("/")[2]
+    if len(resource) > 0 and resource[-1] == '/':
+        resource = resource[:-1]
+
+    resource_exists = False
+    try:
+        print('Recurso solicitado: ' + resource)
+        file = open(resource, "r", encoding='utf-8')
+        resource_exists = True
+
+        output_data = file.readlines()
+
+        client_socket.send("HTTP/1.0 200 OK\r\n".encode())
+        client_socket.send("Content-Type:text/html\r\n".encode())
+
+        for out_data in output_data:
+            client_socket.send(out_data.encode())
+
+        print('Lectura desde caché')
+        print()
+    except IOError:
+        if not resource_exists:
+            remote_socket = socket(AF_INET, SOCK_STREAM)
+            host_name = resource.replace("www.", "", 1)
+
+            server_name = resource.partition("/")[0]
+            file_to_request = 'http://' + server_name if ''.join(resource.partition('/')[1:]) == '' else ''.join(resource.partition('/')[1:])
+
+            try:
+                remote_socket.connect((server_name, 80))
+                file_obj = remote_socket.makefile('rwb', None)
+                header = "GET " + file_to_request + " HTTP/1.1\r\nHost: " + server_name + '\r\n\r\n'
+                file_obj.write(header.encode())
+                file_obj.flush()
+
+                headers = file_obj.readlines()
+
+                if headers[0] == b'404':
+                    print('404')
+                    client_socket.send("HTTP/1.1 404 Not Found\r\n\r\n".encode())
+                    client_socket.close()
+                    continue
+
+                for head in headers:
+                    client_socket.send(head)
+
+                tmp_file = open(resource, "wb")
+
+                for head in headers:
+                    tmp_file.write(head)
+
+                tmp_file.close()
+            except:
+                print("Solicitud inválida")
+        else:
+            client_socket.send("HTTP/1.0 404 NOT FOUND\r\n".encode())
+            client_socket.send("Content-Type:text/html\r\n".encode())
+            client_socket.send("<html><head><title>No encontrado</title></head><body><h1>No encontrado</h1></body></html>".encode())
+    finally:
+        print()
+
+    client_socket.close()
