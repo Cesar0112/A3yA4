@@ -1,5 +1,6 @@
-import socket
-import base64
+from socket import *
+from base64 import *
+from ssl import *
 # Define el mensaje a enviar
 msg = "\r\nI love computer networks!"
 endmsg = "\r\n.\r\n"
@@ -9,7 +10,7 @@ mailserver = "smtp.gmail.com"
 port = 587
 
 # Crea un socket llamado clientSocket y establece una conexión TCP con mailserver
-clientSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+clientSocket = socket(AF_INET, SOCK_STREAM)
 clientSocket.connect((mailserver, port))
 
 # Recibe el mensaje de saludo del servidor
@@ -18,7 +19,9 @@ if(recv != ""):
     print("Saludo del servidor: "+recv)
 if recv[:3] != '220':
     print('No se recibió la respuesta 220 del servidor.')
-
+else:
+    print("Todo fue correctamente con la conexión al servidor")
+    
 # Envía el comando HELO y muestra la respuesta del servidor
 heloCommand = 'HELO Alice\r\n'
 clientSocket.send(heloCommand.encode())
@@ -28,6 +31,8 @@ if(recv1 != ""):
 
 if recv1[:3] != '250':
     print('No se recibió la respuesta 250 del servidor.')
+else:
+    print("Se ejecutó correctamente el comando HELO Alice")
 
 # Envía el comando STARTTLS y muestra la respuesta del servidor
 starttlsCommand = 'STARTTLS\r\n'
@@ -37,10 +42,12 @@ if(recv2 != ""):
     print("Respuesta al comando STARTTLS: "+recv2)
 if recv2[:3] != '220':
     print('No se recibió la respuesta 220 del servidor.')
-
+else:
+    print("Se ejecutó correctamente el comando STARTTLS")
+    
 # Encripta la conexión usando SSL/TLS
-import ssl
-clientSocket = ssl.wrap_socket(clientSocket)
+
+clientSocket = wrap_socket(clientSocket)
 
 # Envía el comando HELO nuevamente después de la encriptación y muestra la respuesta del servidor
 heloCommand = 'HELO Alice\r\n'
@@ -52,7 +59,9 @@ if(recv3 != ""):
 
 if recv3[:3] != '250':
     print('No se recibió la respuesta 250 del servidor.')
-
+else:
+    print("Se ejecutó correctamente el comando HELO Alice")
+    
 # Envía el comando AUTH LOGIN y muestra la respuesta del servidor
 authCommand = 'AUTH LOGIN\r\n'
 clientSocket.send(authCommand.encode())
@@ -63,10 +72,12 @@ if(recv4 != ""):
 
 if recv4[:3] != '334':
     print('No se recibió la respuesta 334 del servidor.')
-
+else:
+    print("Se ejecutó correctamente el comando AUTH LOGIN")
+    
 # Envía el nombre de usuario y muestra la respuesta del servidor
 
-username = base64.b64encode("cesarfernandezgarcia349@gmail.com".encode()) + b'\r\n'
+username = b64encode("cesarfernandezgarcia349@gmail.com".encode()) + b'\r\n'
 clientSocket.send(username)
 recv5 = clientSocket.recv(1024).decode()
 
@@ -74,9 +85,11 @@ if(recv5 != ""):
     print("Respuesta al enviar el nombre de usuario: "+recv5)
 if recv5[:3] != '334':
     print('No se recibió la respuesta 334 del servidor.')
-
+else:
+    print("Se envió correctamente el nombre de usuario")
+    
 # Envía la contraseña y muestra la respuesta del servidor
-password = base64.b64encode("lelp feet yrwg bean".encode()) + b'\r\n'
+password = b64encode("lelp feet yrwg bean".encode()) + b'\r\n'
 clientSocket.send(password)
 recv6 = clientSocket.recv(1024).decode()
 
@@ -84,7 +97,9 @@ if(recv6 != ""):
     print("Respuesta al enviar la contraseña: "+recv6)
 if recv6[:3] != '235':
     print('No se recibió la respuesta 235 del servidor. Al enviar la contraseña')
-
+else:
+    print("Las credenciales son correctas")
+    
 # Envía el comando MAIL FROM y muestra la respuesta del servidor
 mailFromCommand = 'MAIL FROM: <cesarfernandezgarcia349@gmail.com>\r\n'
 clientSocket.send(mailFromCommand.encode())
@@ -94,6 +109,8 @@ if(recv7 != ""):
     print("Respuesta al comando MAIL FROM: "+recv7)
 if recv7[:3] != '250':
     print('No se recibió la respuesta 250 del servidor.')
+else:
+    print("Se ejecutó correctamente el comando MAIL FROM")
 
 # Envía el comando RCPT TO y muestra la respuesta del servidor
 rcptToCommand = 'RCPT TO: <cesarfernandezgarcia349@gmail.com>\r\n'
@@ -104,7 +121,8 @@ if(recv8 != ""):
     print("Respuesta al comando RCPT TO: "+recv8)
 if recv8[:3] != '250':
     print('No se recibió la respuesta 250 del servidor.')
-
+else:
+    print("Se ejecutó correctamente el comando RCPT TO")
 # Envía el comando DATA y muestra la respuesta del servidor
 dataCommand = 'DATA\r\n'
 clientSocket.send(dataCommand.encode())
@@ -114,7 +132,8 @@ if(recv9 != ""):
     print("Respuesta al comando DATA: "+recv9)
 if recv9[:3] != '354':
     print('No se recibió la respuesta 354 del servidor.')
-
+else:
+    print("Se ejecutó correctamente el comando DATA")
 # Envía los datos del mensaje
 messageData = 'Subject: Prueba de correo electrónico\r\n' + msg + endmsg
 clientSocket.send(messageData.encode())
@@ -126,8 +145,9 @@ recv10 = clientSocket.recv(1024).decode()
 if(recv10 != ""):
     print("Respuesta al comando QUIT: "+recv10)
 if recv10[:3] != '250':
-    print('No se recibió la respuesta 221 del servidor.')
-
+    print('No se recibió la respuesta 250 del servidor.')
+else:
+    print("Se ejecutó correctamente el comando QUIT")
 # Cierra el socket
 clientSocket.close()
 print("Socket cerrado")
